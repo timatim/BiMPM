@@ -43,51 +43,6 @@ def f_m_multi(v1, v2, W):
     return result
 
 
-def matching(p_context, q_context, W, l=4):
-    """
-    
-    :param p_context: [1, batch, D]
-    :param q_context: [seq_len, batch, D]
-    :param W: [8, l, D]
-    :param l: number of perspectives
-    :return: [B, l]
-    """
-    seq_len, batch, hidden_size_2 = p_context.size()
-    half = int(hidden_size_2 / 2)
-    p_context_fw, p_context_bw = p_context.split(half, -1)
-    q_context_fw, q_context_bw = q_context.split(half, -1)
-
-    matching_vecs = []
-    start = time()
-    m_full_fws = f_m(p_context_fw, q_context_fw[-1].repeat(seq_len, 1, 1), W[0])
-    m_full_bws = f_m(p_context_bw, q_context_bw[0].repeat(seq_len, 1, 1), W[1])
-    matching_vecs.append(m_full_fws)
-    matching_vecs.append(m_full_bws)
-
-    # m_max_pool_fws = max_pool_matching(p_context_fw, q_context_fw, W[2])
-    # m_max_pool_bws = max_pool_matching(p_context_bw, q_context_bw, W[3])
-    # matching_vecs.append(m_max_pool_fws)
-    # matching_vecs.append(m_max_pool_bws)
-    #
-    # m_att_fws, m_maxatt_fws = attentive_matching(p_context_fw, q_context_fw, W[4], W[5])
-    # m_att_bws, m_maxatt_bws = attentive_matching(p_context_bw, q_context_bw, W[4], W[5])
-    # matching_vecs.append(m_att_fws)
-    # matching_vecs.append(m_att_bws)
-    #
-    # matching_vecs.append(m_maxatt_fws)
-    # matching_vecs.append(m_maxatt_bws)
-
-    assert m_full_fws.size() == m_full_bws.size()
-    assert m_full_fws.size() == torch.Size([seq_len, batch, l])
-
-    # concat forward and backward
-    matching_vecs = torch.cat(matching_vecs, dim=-1 )
-
-    assert matching_vecs.size() == torch.Size([seq_len, batch, 2*l])
-    # print('match', time() - start)
-    return matching_vecs
-
-
 def max_pool_matching(p, q, W):
     """
     
@@ -120,7 +75,6 @@ def attentive_matching(p, q, W0, W1):
     :return: 
     """
     seq_len, batch_size, dim = p.size()
-    l = W0.size()[0]
 
     # [seq_len_i, seq_len_j, dim]
     alpha = F.cosine_similarity(p.unsqueeze(1), q.unsqueeze(0), 3)
@@ -144,21 +98,75 @@ def attentive_matching(p, q, W0, W1):
 
 
 class MatchingLayer(nn.Module):
-    def __init__(self, hidden_dim=100, perspectives=4):
+    def __init__(self, hidden_dim=100, perspectives=4,
+                 full_match=True, maxpool_match=True, att_match=True, maxatt_match=True):
         super(MatchingLayer, self).__init__()
         self.Wp = nn.Parameter(torch.randn(2, perspectives, hidden_dim))  # [8, l, d]
         self.Wps = nn.ParameterList([nn.Parameter(torch.randn(perspectives, hidden_dim)) for i in range(8)])
         self.Wq = nn.Parameter(torch.randn(2, perspectives, hidden_dim))
         self.Wqs = nn.ParameterList([nn.Parameter(torch.randn(perspectives, hidden_dim)) for i in range(8)])
+
+        self.full_match = full_match
+        self.maxpool_match = maxpool_match
+        self.att_match = att_match
+        self.maxatt_match = maxatt_match
+
         self.perspectives = perspectives
 
     def forward(self, p_contexts, q_contexts):
         # p to q
-        p_matching_vecs = matching(p_contexts, q_contexts, self.Wps, l=self.perspectives)
-        q_matching_vecs = matching(q_contexts, p_contexts, self.Wqs, l=self.perspectives)
+        matching_vecs = self.matching(p_contexts, q_contexts, self.Wps, l=self.perspectives)
 
-        return p_matching_vecs, q_matching_vecs
+        return matching_vecs
         # return p_contexts, q_contexts
+
+    def matching(self, p_context, q_context, W, l=4):
+        """
+
+        :param p_context: [1, batch, D]
+        :param q_context: [seq_len, batch, D]
+        :param W: [8, l, D]
+        :param l: number of perspectives
+        :return: [B, l]
+        """
+        seq_len, batch, hidden_size_2 = p_context.size()
+        half = int(hidden_size_2 / 2)
+        p_context_fw, p_context_bw = p_context.split(half, -1)
+        q_context_fw, q_context_bw = q_context.split(half, -1)
+
+        matching_vecs = []
+
+        if self.full_match:
+            m_full_fws = f_m(p_context_fw, q_context_fw[-1].repeat(seq_len, 1, 1), W[0])
+            m_full_bws = f_m(p_context_bw, q_context_bw[0].repeat(seq_len, 1, 1), W[1])
+            matching_vecs.append(m_full_fws)
+            matching_vecs.append(m_full_bws)
+
+        if self.maxpool_match:
+            m_max_pool_fws = max_pool_matching(p_context_fw, q_context_fw, W[2])
+            m_max_pool_bws = max_pool_matching(p_context_bw, q_context_bw, W[3])
+            matching_vecs.append(m_max_pool_fws)
+            matching_vecs.append(m_max_pool_bws)
+
+
+        m_att_fws, m_maxatt_fws = attentive_matching(p_context_fw, q_context_fw, W[4], W[5])
+        m_att_bws, m_maxatt_bws = attentive_matching(p_context_bw, q_context_bw, W[4], W[5])
+
+        if self.att_match:
+            matching_vecs.append(m_att_fws)
+            matching_vecs.append(m_att_bws)
+
+        if self.maxatt_match:
+            matching_vecs.append(m_maxatt_fws)
+            matching_vecs.append(m_maxatt_bws)
+
+        assert m_full_fws.size() == m_full_bws.size()
+        assert m_full_fws.size() == torch.Size([seq_len, batch, l])
+
+        # concat forward and backward
+        matching_vecs = torch.cat(matching_vecs, dim=-1)
+
+        return matching_vecs
 
 if __name__ == "__main__":
     test_input_p = Variable(torch.randn(5, 128, 200))

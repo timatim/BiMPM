@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import numpy as np
 import os
 
@@ -49,17 +48,16 @@ class WordRepresentationLayer(nn.Module):
         :return: representations of words in the sentence [batch, seq_len, word_dim]
         """
         batch_size, seq_len, word_len = chars.size()
-        chars = chars.permute(1, 2, 0) #view(seq_len, word_len, batch_size)
+        chars = chars.view(batch_size*seq_len, word_len)
+        chars = chars.permute(1, 0)
         words = words.permute(1, 0)
 
         word_embs = self.word_embedding(words)
-        # for each word [word_len, B],
-        # obtain character embeddings [word_len, B, char_D],
-        # pass to LSTM,
-        # and take final hidden state of LSTM
-        char_composed_word_embs = torch.stack([self.char_LSTM(
-                                 self.char_embedding(chars[i]))[0][-1]
-                                 for i in range(seq_len)]).squeeze()
+
+        # pass to LSTM, and take final hidden state of LSTM. Reshape to batch_size * seq_len
+        char_embs = self.char_embedding(chars)
+        char_composed_word_embs = self.char_LSTM(char_embs)[0][-1].view(batch_size, seq_len, -1).permute(1, 0, 2)
+
         # concatenate results
         word_rep = torch.cat([word_embs, char_composed_word_embs], dim=2)
         return word_rep

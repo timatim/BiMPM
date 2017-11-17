@@ -40,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--cuda', action='store_true', help='use CUDA')
     parser.add_argument('--save', type=str, default='./models/', help='path to store models')
+    parser.add_argument('--interval', type=int, default=50, help='batch interval to report accuracy')
     parser.add_argument('--batch-size', type=int, default=32)
     args = parser.parse_args()
 
@@ -55,8 +56,8 @@ if __name__ == "__main__":
     quora_dev = pd.read_csv(os.path.join(args.data, 'dev.tsv'), sep='\t', names=['label', 'p', 'q', 'id'])
     train_size = len(quora_train)
 
-    train_loader = data_loader.make_dataloader(quora_train, words, chars, batch_size, cuda=args.cuda)
-    dev_loader = data_loader.make_dataloader(quora_dev, words, chars, batch_size, cuda=args.cuda)
+    train_loader = data_loader.make_dataloader(quora_train.head(1600), words, chars, batch_size, cuda=args.cuda)
+    dev_loader = data_loader.make_dataloader(quora_dev.head(160), words, chars, batch_size, cuda=args.cuda)
 
     del quora_train
     del quora_dev
@@ -95,7 +96,7 @@ if __name__ == "__main__":
             optimizer.step()
 
             # report performance
-            if i % 50 == 0:
+            if i % args.interval == 0:
                 train_acc = test_model(train_loader, model)
                 val_acc = test_model(dev_loader, model)
                 print('Epoch: [{0}/{1}], Step: [{2}/{3}], Loss: {4}, Train Acc: {5}, Validation Acc:{6}'.format(
@@ -104,7 +105,7 @@ if __name__ == "__main__":
                 train_acc_history.append(train_acc)
                 validation_acc_history.append(val_acc)
 
-        torch.save(model.state_dict(), os.path.join(args.save, "BiMPM_%d.pth" % epoch))
+        # torch.save(model.state_dict(), os.path.join(args.save, "BiMPM_%d.pth" % epoch))
     print("Train Accuracy:")
     print(train_acc_history)
     print("Validation Accuracy:")
