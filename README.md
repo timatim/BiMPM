@@ -1,7 +1,7 @@
 # Paraphrase Detection with BiMPM
 
 ## Description
-This repository contains the [PyTorch](http://pytorch.org/) implementation of the Bilateral Multi-perspective Model [BiMPM](https://arxiv.org/pdf/1702.03814.pdf)) described in the paper by Wang et al. The model is used to perform a paraphrase detection task on the [Quora Questions Pairs dataset](https://data.quora.com/First-Quora-Dataset-Release-Question-Pairs). In order to maintain consistency in comparison, we adapted the train/dev/test partition by Wang et al. The program takes two phrases as inputs and predicts a value to indicate if the two phrases are paraphrases of each other or not.
+This repository contains the [PyTorch](http://pytorch.org/) implementation of the Bilateral Multi-perspective Matching model [BiMPM](https://arxiv.org/pdf/1702.03814.pdf)) described in the paper by Wang et al. The model is used to perform a paraphrase detection task on the [Quora Questions Pairs dataset](https://data.quora.com/First-Quora-Dataset-Release-Question-Pairs). In order to maintain consistency in comparison, we adapted the train/dev/test partition by Wang et al. The program takes two phrases as inputs and predicts a value to indicate if the two phrases are paraphrases of each other or not.
 
 ## Requirements
  - python 3.5
