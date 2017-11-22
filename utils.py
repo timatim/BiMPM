@@ -1,11 +1,10 @@
 import numpy as np
-import os
 import torch
-from torch.autograd import Variable
 
 
 def word_to_padded_index_sequence(word, chars, is_padding=True, word_len=20, cuda=False):
     """
+    
     :param word: word to be tokenized by characters
     :param padding: if the word is a padding word itself, return all paddings
     """
@@ -33,8 +32,18 @@ def word_to_padded_index_sequence(word, chars, is_padding=True, word_len=20, cud
     return char_indices
 
 
-def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, cuda=False):
-    '''Annotates datasets with feature vectors.'''
+def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, word_len=20, cuda=False):
+    """
+    Converts tokenized sentences to padded word indices of specified seq_len and each word
+    in the sentence to character indices
+    :param sentence: list of words
+    :param words: word vocabulary
+    :param chars: character vocabulary
+    :param seq_len: padded length
+    :param word_len: padded word length
+    :param cuda: whether or not to use cuda tensors
+    :return: (word indices, character indices)
+    """
 
     PADDING = "<PAD>"
     UNKNOWN = "<UNK>"
@@ -57,7 +66,8 @@ def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, cuda=F
             word_as_chars.append(word_to_padded_index_sequence(tokens[i], chars, cuda=cuda))
         else:
             index = words[PADDING]
-            word_as_chars.append(word_to_padded_index_sequence('', chars, cuda=cuda, is_padding=True))
+            word_as_chars.append(word_to_padded_index_sequence('', chars, word_len=word_len,
+                                                               cuda=cuda, is_padding=True))
 
         if cuda:
             words_as_chars.append(torch.cuda.LongTensor(word_as_chars))

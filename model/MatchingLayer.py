@@ -101,10 +101,7 @@ class MatchingLayer(nn.Module):
     def __init__(self, hidden_dim=100, perspectives=4,
                  full_match=True, maxpool_match=True, att_match=True, maxatt_match=True):
         super(MatchingLayer, self).__init__()
-        self.Wp = nn.Parameter(torch.randn(2, perspectives, hidden_dim))  # [8, l, d]
-        self.Wps = nn.ParameterList([nn.Parameter(torch.randn(perspectives, hidden_dim)) for i in range(8)])
-        self.Wq = nn.Parameter(torch.randn(2, perspectives, hidden_dim))
-        self.Wqs = nn.ParameterList([nn.Parameter(torch.randn(perspectives, hidden_dim)) for i in range(8)])
+        self.W = nn.ParameterList([nn.Parameter(torch.randn(perspectives, hidden_dim)) for i in range(8)])
 
         self.full_match = full_match
         self.maxpool_match = maxpool_match
@@ -115,7 +112,7 @@ class MatchingLayer(nn.Module):
 
     def forward(self, p_contexts, q_contexts):
         # p to q
-        matching_vecs = self.matching(p_contexts, q_contexts, self.Wps, l=self.perspectives)
+        matching_vecs = self.matching(p_contexts, q_contexts, self.W, l=self.perspectives)
 
         return matching_vecs
         # return p_contexts, q_contexts
