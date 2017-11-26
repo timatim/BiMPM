@@ -9,7 +9,7 @@ This repository contains the [PyTorch](http://pytorch.org/) implementation of th
 
 ## Training
 To train the model using the setting described in the paper, run
-> python trainer.py --embedding glove.840B.300d.txt --data quora_data/ --cuda
+> python trainer.py --embedding wordvec.txt --data quora_data/ --seq-len 50 --perspectives 20 --batch-size 32 --cuda 
 
 ## Issues
 Please report any issues to me juiting.hsu@nyu.edu.
