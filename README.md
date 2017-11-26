@@ -16,3 +16,4 @@ Please report any issues to me juiting.hsu@nyu.edu.
 
 ## Reference
  - Zhiguo Wang, Wael Hamza, Radu Florian. [Bilateral Multi-Perspective Matching for Natural Language Sentences](https://arxiv.org/pdf/1702.03814.pdf). IJCAI (2017)
+ - [Quora Question Pairs Dataset](https://data.quora.com/First-Quora-Dataset-Release-Question-Pairs)
