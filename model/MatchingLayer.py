@@ -80,8 +80,7 @@ def attentive_matching(p, q, W0, W1):
     alpha = F.cosine_similarity(p.unsqueeze(1), q.unsqueeze(0), 3)
     assert alpha.size() == torch.Size([seq_len, seq_len, batch_size])
 
-    h_mean = torch.matmul(alpha.permute(2, 0, 1), q.permute(1, 0, 2)).permute(1, 0, 2) / alpha.sum(1).unsqueeze(-1)
-    h_mean = h_mean.view(seq_len, batch_size, dim)
+    h_mean = (alpha.unsqueeze(3) * q).sum(1) / (alpha.sum(1).unsqueeze(2))
 
     m_att = f_m(p, h_mean, W0)
 
