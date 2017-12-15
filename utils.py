@@ -32,11 +32,11 @@ def word_to_padded_index_sequence(word, chars, is_padding=True, word_len=20, cud
     return char_indices
 
 
-def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, word_len=20, cuda=False):
+def sentence_to_padded_index_sequence(tokens, words, chars, seq_len=50, word_len=20, cuda=False):
     """
     Converts tokenized sentences to padded word indices of specified seq_len and each word
     in the sentence to character indices
-    :param sentence: list of words
+    :param tokens: list of words
     :param words: word vocabulary
     :param chars: character vocabulary
     :param seq_len: padded length
@@ -52,7 +52,6 @@ def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, word_l
 
     # list of each word's character indices list
     words_as_chars = []
-    tokens = sentence.lower().split()
 
     for i in range(seq_len):
         # character indices of each word
@@ -63,7 +62,7 @@ def sentence_to_padded_index_sequence(sentence, words, chars, seq_len=50, word_l
                 index = words[tokens[i]]
             else:
                 index = words[UNKNOWN]
-            word_as_chars.append(word_to_padded_index_sequence(tokens[i], chars, cuda=cuda))
+            word_as_chars.append(word_to_padded_index_sequence(tokens[i], chars, word_len=word_len, cuda=cuda))
         else:
             index = words[PADDING]
             word_as_chars.append(word_to_padded_index_sequence('', chars, word_len=word_len,

@@ -101,7 +101,6 @@ if __name__ == "__main__":
             if args.cuda:
                 data = [d.cuda() for d in data]
                 labels = labels.cuda()
-
             label_batch = Variable(labels)
             data = [Variable(item) for item in data]
             optimizer.zero_grad()
@@ -112,12 +111,9 @@ if __name__ == "__main__":
 
             # report performance
             if (i + 1) % args.interval == 0:
-                train_acc = test_model(train_loader, model)
                 val_acc = test_model(dev_loader, model)
-                print('Epoch: [{0}/{1}], Step: [{2}/{3}], Loss: {4}, Train Acc: {5}, Validation Acc:{6}'.format(
-                    epoch + 1, num_epochs, i + 1, len(train_loader), loss.data[0],
-                    train_acc, val_acc))
-                train_acc_history.append(train_acc)
+                print('Epoch: [{0}/{1}], Step: [{2}/{3}], Loss: {4}, Validation Acc:{5}'.format(
+                    epoch + 1, num_epochs, i + 1, len(train_loader), loss.data[0], val_acc))
                 validation_acc_history.append(val_acc)
         print("Epoch %d, time taken = %.4f" % (epoch + 1, time() - start))
         torch.save(model.state_dict(), os.path.join(args.save, "BiMPM_%d.pth" % epoch))
