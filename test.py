@@ -2,11 +2,11 @@ import torch
 from torch.autograd import Variable
 import pandas as pd
 import argparse
-import os
 from model.BiMPM import BiMPM
 import gc
 import data_loader
 import utils
+from tqdm import tqdm
 from time import time
 
 
@@ -18,7 +18,7 @@ def test_model(loader, model):
     correct = 0
     total = 0
     model.eval()
-    for data, labels in loader:
+    for data, labels in tqdm(loader):
         data = [Variable(item) for item in data]
         if args.cuda:
             data = [d.cuda() for d in data]
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     print("Testing...")
     test_acc = test_model(test_loader, model)
 
-    print("Accuracy: %.4f", test_acc)
+    print("Accuracy: %.4f" % test_acc)
