@@ -6,6 +6,17 @@ import utils
 
 class QuoraDataset(Dataset):
     def __init__(self, p, q, label, words, chars, seq_len=50, word_len=20, cuda=False):
+        """
+        Initializes a QuoraDataset object, subclass of torch Dataset
+        :param p: list-like of passage strings
+        :param q: list-like of passage strings
+        :param label: list-like of binary labels [0,1]
+        :param words: 
+        :param chars: 
+        :param seq_len: 
+        :param word_len: 
+        :param cuda: 
+        """
         self.p = p
         self.q = q
         self.label = label
@@ -48,6 +59,18 @@ class QuoraDataset(Dataset):
 
 
 def make_dataloader(df, words, chars, seq_len=50, word_len=20, batch_size=128, shuffle=True, cuda=False):
+    """
+    Returns a pytorch DataLoader of the Quora dataset
+    :param df: a pandas DataFrame-like with columns ['p', 'q', 'label']
+    :param words: dictionary of vocabs
+    :param chars: dictionary of character vocabs
+    :param seq_len: sequence length to pad to
+    :param word_len: word length to pad to
+    :param batch_size: 
+    :param shuffle: 
+    :param cuda: 
+    :return: a pytorch DataLoader object
+    """
     dataset = QuoraDataset(df['p'], df['q'], df['label'], words, chars, seq_len=seq_len, word_len=word_len, cuda=cuda)
     train_loader = torch.utils.data.DataLoader(dataset=dataset,
                                                batch_size=batch_size,
