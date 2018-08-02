@@ -11,11 +11,15 @@ This repository contains the [PyTorch](http://pytorch.org/) implementation of th
 
 ## Train
 To train the model using the setting described in the paper, run
-> python trainer.py --embedding wordvec.txt --data quora_data/ --word-len 15 --seq-len 50 --perspectives 5 --batch-size 32 --cuda 
+```bash
+python trainer.py --embedding wordvec.txt --data quora_data/ --word-len 15 --seq-len 50 --perspectives 5 --batch-size 32 --cuda 
+```
 
 ## Test
 To test a model on the test dataset, run
-> python test.py --embedding wordvec.txt --data quora_data/test.tsv --word-len 15 --seq-len 50 --perspectives 5 --batch-size 32 --model model.pth
+```bash
+python test.py --embedding wordvec.txt --data quora_data/test.tsv --word-len 15 --seq-len 50 --perspectives 5 --batch-size 32 --model model.pth
+```
 
 ## Issues
 Please report any issues to me juiting.hsu@nyu.edu.
